@@ -44,6 +44,20 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
         dateSourceDao2 = Dao2;
         threadSize = i;
         outPutFileName = outPutFileName1;
+
+        try {
+            bufferedWriter = new BufferedWriter(new FileWriter("outputfile/" + outPutFileName + "-" + endOutPutFileName + "-" + filename + ".txt"));
+            log.info("===============输出文件名称：sql" + threadSize + "-" + filename + ".txt");
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                bufferedWriter.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+
         log.info("====================threadSize:" + threadSize);
 
     }
@@ -79,18 +93,6 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
                                 ex.printStackTrace();
                             }
                         }
-                    } else {
-                        try {
-                            bufferedWriter = new BufferedWriter(new FileWriter("outputfile/" + outPutFileName + "-" + endOutPutFileName + "-" + filename + ".txt"));
-                            log.info("===============输出文件名称：sql" + threadSize + "-" + filename + ".txt");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            try {
-                                bufferedWriter.close();
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
                     }
                 }
                 handle(count,true);
@@ -98,20 +100,20 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
             }
         }catch(Exception e){
             e.printStackTrace();
-            log.info(e.getMessage());
+            log.info("===============报错："+e.getMessage());
         }
     }
 
     private void handle(int count,boolean value) {
         //System.out.println("========进入handle："+threadSize+"======================");
         log.info("========进入handle，线程：" + threadSize + "======================");
-        long counts = (count) * BATCH_SIZE;
+        //long counts = (count) * BATCH_SIZE;
         try {
             Object[] keys = null;
             if (gxids.size() > 0) {
                 keys = gxids.get(0).keySet().toArray();
                 if ((count*5000)  % 500000 == 0 && value) {
-                //if ((count * 5) % 20 == 0 && value) {
+                    //if ((count * 5) % 20 == 0 && value) {
                     for (int i = 0; i < keys.length; i++) {
                         if (i == keys.length - 1) {
                             bufferedWriter.write(keys[i] + "(迁入)," + keys[i] + "(迁出),比对结果" + "\n");
@@ -124,7 +126,7 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
                 }
             }
             for (int i = 0; i < gxids.size(); i++) {
-                long allCount = counts + (long) i;
+                //long allCount = counts + (long) i;
                 //获取第i条数据的所有属性名称
                 //Set keys = gxids.get(i).keySet();
                 String txDate = gxids.get(i).get("TXDATE").toString();
@@ -140,6 +142,7 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
                     bufferedWriter.write("-------第" + allCount + "条数据对比,该条数据主表有从表无，txdate:" + txDate + ",tranceNo:" + tranceNo + "-----" + "\n");
                     System.out.println("-------第" + allCount + "条数据对比，txdate:" + txDate + ",tranceNo:" + tranceNo + "-----" + "\n");
                 }*/
+                log.info("============valueTwo:"+valueTwo);
                 for (int j = 0; j < keys.length; j++) {
                     if (j == keys.length - 1) {
                         //当循环到keys最后一个属性时，结尾要换行
@@ -175,6 +178,7 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
                                     valueTran = valueTwo.get(keys[j]).toString();
                                 }
                             }
+                            log.info("========属性名：" + keys[j] + "，主表值：" + valueMain + "，从表值："+valueTran);
                             if (valueMain.equals(valueTran)) {
                                 bufferedWriter.write(valueTran + "," + valueMain + ",true" + "\n");
                             /*bufferedWriter.write(key + ":true" + ",");
@@ -234,12 +238,12 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            log.info(e.getMessage());
-            try {
+            log.info("===============报错："+e.getMessage());
+            /*try {
                 bufferedWriter.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
-            }
+            }*/
         } finally {
             // 处理完每批数据后后将临时清空
             this.size = 0;
@@ -249,12 +253,17 @@ public class ThreadGxidResultHandler implements ResultHandler<HashMap> {
 
 
     public void end() {
-        handle(count + 1,false);// 处理最后一批不到BATCH_SIZE的数据
+        if (count != 0){
+            //当主表中总数据小于5000条时，程序直接进入end（），需要给输出文件首行添加属性名称
+            handle(count ,false);// 处理最后一批不到BATCH_SIZE的数据
+        }else{
+            handle(count ,true);// 处理最后一批不到BATCH_SIZE的数据
+        }
         try {
             bufferedWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
-            log.info(e.getMessage());
+            log.info("===============报错："+e.getMessage());
         }
     }
 }
