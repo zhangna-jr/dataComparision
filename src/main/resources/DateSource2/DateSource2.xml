@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dhcc.test.dao.DateSource2.DateSourceDao2">
+
+    <!--<select id="selectDate" resultType="java.util.HashMap" parameterType="java.lang.String">
+        ${sql}
+    </select>-->
+    <update id="createNewTableAndInsertData" parameterType="java.lang.String">
+        create table MIDDLETABLE as ${sql}
+    </update>
+    <update id="createNewTablesAndInsertData" parameterType="java.lang.String">
+        create table ${tableName} as ${sql}
+    </update>
+
+    <select id="selectMiddleTable" resultType="java.lang.Integer" >
+        <!--select count(*) from user_tables  where upper(table_name) = upper('middleTable')-->
+        select 1 from user_tables  where upper(table_name) = upper('MIDDLETABLE')
+    </select>
+    <update id="createIndex" >
+        create unique index MIDDLETABLE_CON on MIDDLETABLE(TXDATE,TRANCENO)
+    </update>
+    <update id="createIndexs" parameterType="java.lang.String">
+        create unique index ${indexName}  on ${tableName}(TXDATE,TRANCENO)
+    </update>
+    <update id="truncateMidTable" parameterType="java.lang.String">
+        truncate table  ${midTable}
+    </update>
+    <update id="truncateTable" >
+        truncate table  MIDDLETABLE
+    </update>
+    <delete id="dropTable">
+        drop table MIDDLETABLE
+    </delete>
+    <delete id="dropMidTable">
+        drop table ${midTable}
+    </delete>
+    <select id="selectMidByDateAndTranceNo" resultType="java.util.HashMap" parameterType="java.lang.String">
+        select * from ${tableName} tb
+        <where>
+            <if test="txDate != null and txDate != ''">
+                TXDATE = #{txDate}
+            </if>
+            <if test="tranceNo != null and tranceNo != ''">
+                and TRANCENO = #{tranceNo}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="selectByDateAndTranceNo" resultType="java.util.HashMap" parameterType="java.lang.String">
+        select * from MIDDLETABLE tb
+        <where>
+            <if test="txDate != null and txDate != ''">
+                TXDATE = #{txDate}
+            </if>
+            <if test="tranceNo != null and tranceNo != ''">
+                 and TRANCENO = #{tranceNo}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAll" resultType="java.util.HashMap" >
+        select * from MIDDLETABLE
+    </select>
+
+
+    <select id="selectAllMiddleTable" resultType="java.lang.String" >
+        select  table_name from user_tables where table_name like '%MIDDLETABLE%'
+    </select>
+</mapper>

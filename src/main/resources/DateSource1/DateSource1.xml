@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dhcc.test.dao.DateSource1.DateSourceDao1">
+
+    <!--fetchSize属性:底层是调用jdbc的setFetchSize方法，查询时从结果集里面每次取设置的行数，循环去取，直到取完。
+                      默认size是0，也就是默认会一次性把结果集的数据全部取出来，当结果集数据量很大时就容易造成内存溢出。-->
+    <select id="selectDate" resultType="java.util.HashMap" parameterType="java.util.HashMap" fetchSize="5000">
+        ${sql}
+    </select>
+    <!--<select id="selectDate" resultType="java.util.HashMap" parameterType="java.lang.String" fetchSize="10">
+        select
+        REQUESTID,TRANSCODE,ACCNO ,ACCNAME,ACCDEPT,ACCSTATUS,BALANCE,STARTDATE,ENDDATE as TXDATE,TRANSDATE ,SUMMARY,TRANSNO,AMOUNT,VCHNO,DEBORCRE,CURRENCY,RECIPACCNO,RECIPACCNAME,RECIPACCDEPT,IDKEY as TRANCENO,RESFILENAME,RESMSG,FLAG
+        from MAPSDB.ACCOUNTSELECTTRACE a WHERE STARTDATE > '20190926'
+    </select>-->
+
+</mapper>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <!-- 属性文件:在配置文件中找到对应的配置项 -->
+    <springProperty scope="context" name="logging.path"
+                    source="logging.path" />
+    <springProperty scope="context" name="logging.max-size"
+                    source="logging.file.max-size" />
+    <springProperty scope="context" name="logging.max-history"
+                    source="logging.file.max-history" />
+    <springProperty scope="context" name="logging.pattern"
+                    source="logging.pattern.file" />
+    <springProperty scope="context" name="logging.level"
+                    source="logging.pattern.level" />
+    <springProperty scope="context" name="logging.root"
+                    source="logging.level.root" />
+    <springProperty scope="context" name="spring.application.ip"
+                    source="spring.cloud.client.ip-address" />
+    <springProperty scope="context" name="spring.application.name"
+                    source="spring.application.name" />
+    <!-- 控制台设置 -->
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <!--        <Logger name="com.dhcc.product.mapper" level="debug" additivity="false">-->
+    <!--                 <appender-ref ref="consoleAppender" />-->
+    <!--        </Logger>-->
+
+    <!-- INFO -->
+    <appender name="infoAppender"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 -->
+        <file>${logging.path}/info.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 文件名称 -->
+            <fileNamePattern>${logging.path}/info/info.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 文件最大保存历史数量 -->
+            <MaxHistory>${logging.max-history}</MaxHistory>
+            <maxFileSize>${logging.max-size}</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <!-- <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern> -->
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.level}</level>
+        </filter>
+
+    </appender>
+
+    <!-- ERROR -->
+    <appender name="errorAppender"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 -->
+        <file>${logging.path}/error.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 文件名称 -->
+            <fileNamePattern>${logging.path}/error/error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 文件最大保存历史数量 -->
+            <MaxHistory>${logging.max-history}</MaxHistory>
+            <!-- 超过50MB时，触发滚动策略 -->
+            <maxFileSize>${logging.max-size}</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!--<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </layout>
+        </encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- 控制台异步输出 -->
+    <appender name="asyncConsole" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold> <!-- default 20, means drop lower event when has 20% capacity remaining -->
+        <appender-ref ref="consoleAppender" />
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>5000</queueSize> <!-- default 256 -->
+        <!-- 		<includeCallerData>true</includeCallerData>default false -->
+        <neverBlock>true</neverBlock><!-- default false, set to true to cause the
+			Appender not block the application and just drop the messages -->
+    </appender>
+    <!--info异步输出到文件 -->
+    <appender name="asyncInfoFile" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>5000</queueSize>
+        <appender-ref ref="infoAppender" />
+    </appender>
+    <!--error异步输出到文件 -->
+    <appender name="asyncErrorFile" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>5000</queueSize>
+        <appender-ref ref="errorAppender" />
+    </appender>
+
+    <logger name="org.springframework.cloud.gateway.filter.LoadBalancerClientFilter" level='trace'/>
+    <!-- <logger name="reactor.ipc.netty.channel.ChannelOperations" level='debug'/> -->
+    <root level="${logging.root}">
+        <appender-ref ref="asyncConsole" />
+        <appender-ref ref="asyncInfoFile" />
+        <appender-ref ref="asyncErrorFile" />
+    </root>
+    <!--    <logger name="com.solin.springmvc.mapper" level="DEBUG"></logger>-->
+    <logger name="org.mybatis" level="debug" additivity="error">
+        <appender-ref ref="asyncInfoFile" />
+    </logger>
+
+
+
+</configuration>
