@@ -28,7 +28,7 @@ public class testProject {
 
 
     public static void main(String[] args) {
-        SpringApplication.run(testProject.class);
+        SpringApplication.run(testProject.class,args);
     }
 
 
